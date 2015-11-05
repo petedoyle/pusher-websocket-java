@@ -54,7 +54,7 @@ public class Factory {
         if (connection == null) {
             try {
                 connection = new WebSocketConnection(options.buildUrl(apiKey), options.getActivityTimeout(),
-                        options.getPongTimeout(), this);
+                        options.getPongTimeout(), options.getConnectTimeout(), this);
             }
             catch (final URISyntaxException e) {
                 throw new IllegalArgumentException("Failed to initialise connection", e);
@@ -63,8 +63,8 @@ public class Factory {
         return connection;
     }
 
-    public WebSocketClient newWebSocketClientWrapper(final URI uri, final WebSocketListener proxy) throws SSLException {
-        return new WebSocketClientWrapper(uri, proxy);
+    public WebSocketClient newWebSocketClientWrapper(final URI uri, final WebSocketListener proxy, int connectTimeout) throws SSLException {
+        return new WebSocketClientWrapper(uri, proxy, connectTimeout);
     }
 
     public synchronized ExecutorService getEventQueue() {

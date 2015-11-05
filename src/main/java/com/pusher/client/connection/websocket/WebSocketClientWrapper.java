@@ -10,6 +10,7 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
 
 /**
@@ -23,8 +24,8 @@ public class WebSocketClientWrapper extends WebSocketClient {
     private static final String WSS_SCHEME = "wss";
     private final WebSocketListener proxy;
 
-    public WebSocketClientWrapper(final URI uri, final WebSocketListener proxy) throws SSLException {
-        super(uri);
+    public WebSocketClientWrapper(final URI uri, final WebSocketListener proxy, int connectTimeout) throws SSLException {
+        super(uri, new Draft_17(), null, connectTimeout);
 
         if (uri.getScheme().equals(WSS_SCHEME)) {
             try {

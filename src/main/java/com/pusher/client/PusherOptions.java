@@ -24,6 +24,8 @@ public class PusherOptions {
     private static final long DEFAULT_ACTIVITY_TIMEOUT = 120000;
     private static final long DEFAULT_PONG_TIMEOUT = 30000;
 
+    private static final int DEFAULT_CONNECT_TIMEOUT = 0;
+
     // Note that the primary cluster lives on a different domain
     // (others are subdomains of pusher.com). This is not an oversight.
     // Legacy reasons.
@@ -33,6 +35,7 @@ public class PusherOptions {
     private boolean encrypted = true;
     private long activityTimeout = DEFAULT_ACTIVITY_TIMEOUT;
     private long pongTimeout = DEFAULT_PONG_TIMEOUT;
+    private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
     private Authorizer authorizer;
 
     /**
@@ -182,6 +185,29 @@ public class PusherOptions {
 
     public long getPongTimeout() {
         return pongTimeout;
+    }
+
+    /**
+     * The number of milliseconds to wait for a successful connection to occur.
+     *
+     * The default value is 0.
+     *
+     * @param connectTimeout
+     *            time to wait for successful connection, in milliseconds
+     * @return this, for chaining
+     */
+    public PusherOptions setConnectTimeout(final int connectTimeout)
+    {
+        if (connectTimeout < 0) {
+            throw new IllegalArgumentException("Connect timeout must not be negative");
+        }
+
+        this.connectTimeout = connectTimeout;
+        return this;
+    }
+
+    public int getConnectTimeout() {
+        return connectTimeout;
     }
 
     /**

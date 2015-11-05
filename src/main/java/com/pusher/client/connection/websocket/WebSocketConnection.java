@@ -34,16 +34,18 @@ public class WebSocketConnection implements InternalConnection, WebSocketListene
     private final ActivityTimer activityTimer;
     private final Map<ConnectionState, Set<ConnectionEventListener>> eventListeners = new HashMap<ConnectionState, Set<ConnectionEventListener>>();
     private final URI webSocketUri;
+    private final int connectTimeout;
 
     private volatile ConnectionState state = ConnectionState.DISCONNECTED;
     private WebSocketClient underlyingConnection;
     private String socketId;
 
     public WebSocketConnection(final String url, final long activityTimeout, final long pongTimeout,
-            final Factory factory) throws URISyntaxException {
+            final int connectTimeout, final Factory factory) throws URISyntaxException {
         webSocketUri = new URI(url);
         activityTimer = new ActivityTimer(activityTimeout, pongTimeout);
         this.factory = factory;
+        this.connectTimeout = connectTimeout;
 
         for (final ConnectionState state : ConnectionState.values()) {
             eventListeners.put(state, new HashSet<ConnectionEventListener>());
@@ -60,7 +62,7 @@ public class WebSocketConnection implements InternalConnection, WebSocketListene
                 if (state == ConnectionState.DISCONNECTED) {
                     try {
                         underlyingConnection = factory
-                                .newWebSocketClientWrapper(webSocketUri, WebSocketConnection.this);
+                                .newWebSocketClientWrapper(webSocketUri, WebSocketConnection.this, connectTimeout);
 
                         updateState(ConnectionState.CONNECTING);
                         underlyingConnection.connect();
