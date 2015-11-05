@@ -8,7 +8,8 @@ buildscript {
 }
 def getProperty = { property ->
 	if (!project.hasProperty(property)) {
-		throw new GradleException("${property} property must be set")
+		return null
+//		throw new GradleException("${property} property must be set")
 	}
 	return project.property(property)
 }
