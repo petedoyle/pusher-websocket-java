@@ -1,9 +1,11 @@
 buildscript {
 	repositories {
-		mavenCentral()
+		jcenter()
 	}
 	dependencies {
 		classpath 'org.ajoberstar:gradle-git:1.1.0'
+		classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
 	}
 }
 def getProperty = { property ->
@@ -16,12 +18,16 @@ def getProperty = { property ->
 
 
 apply plugin: 'java'
-apply plugin: 'maven'
+//apply plugin: 'maven'
 apply plugin: 'eclipse'
 apply plugin: 'org.ajoberstar.github-pages'
 apply plugin: 'signing'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
 
-group = "com.pusher"
+
+group = "com.whistle.custom"
 version = "1.0.0"
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
@@ -39,7 +45,7 @@ ext.sharedManifest = manifest {
 
 
 repositories {
-	mavenCentral()
+	jcenter()
 	maven { url "http://clojars.org/repo" }
 }
 
@@ -133,20 +139,99 @@ artifacts {
 	archives jar, fatJar, sourcesJar, javadocJar
 }
 
+install {
+	repositories.mavenInstaller {
+		pom.project {
+			name POM_NAME
+			description POM_DESCRIPTION
+			url POM_URL
+			inceptionYear POM_INCEPTION_YEAR
+
+			packaging POM_PACKAGING
+			groupId GROUP
+			artifactId POM_ARTIFACT_ID
+			version VERSION_NAME
+
+			licenses {
+				license {
+					name POM_LICENCE_NAME
+					url POM_LICENCE_URL
+					distribution POM_LICENCE_DIST
+				}
+			}
+
+			scm {
+				connection POM_SCM_CONNECTION
+				url POM_SCM_URL
+
+			}
+			developers {
+				developer {
+					name 'Whistle'
+				}
+			}
+		}
+	}
+}
+
+bintray {
+	user = getMavenUsername()
+	key = getMavenPassword()
+	publications = ['aar']
+	publish = VERSION_NAME.contains("SNAPSHOT")
+	override = VERSION_NAME.contains("SNAPSHOT")
+	pkg {
+		repo = 'maven-internal'
+		name = POM_ARTIFACT_ID
+		userOrg = 'whistle'
+//		licenses = [POM_LICENCE_NAME]
+		vcsUrl = POM_SCM_URL
+
+		version {
+			name = VERSION_NAME
+			desc = POM_DESCRIPTION
+			released = new Date()
+		}
+	}
+}
+
+publishing {
+	publications {
+		aar(MavenPublication) {
+			groupId GROUP
+			artifactId POM_ARTIFACT_ID
+			version VERSION_NAME
+
+            artifact fatJar
+			artifact sourcesJar
+			artifact javadocJar
+		}
+	}
+}
+
+def getMavenUsername() {
+	project.hasProperty("WHISTLE_MAVEN_USERNAME") ? project.property("WHISTLE_MAVEN_USERNAME") : System.getenv('WHISTLE_MAVEN_USERNAME')
+}
+
+def getMavenPassword() {
+	project.hasProperty('WHISTLE_MAVEN_PASSWORD') ? project.property('WHISTLE_MAVEN_PASSWORD') : System.getenv('WHISTLE_MAVEN_PASSWORD')
+}
+
+/*
 uploadArchives { repositories { mavenDeployer {
 	beforeDeployment {
 		MavenDeployment deployment -> signing.signPom(deployment)
 	}
-	repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+	repository(url: RELEASE_REPOSITORY_URL) {
 		authentication(
-			userName: getProperty("maven.username"),
-			password: getProperty("maven.password")
+			userName: getProperty("WHISTLE_MAVEN_USERNAME"),
+			password: getProperty("WHISTLE_MAVEN_PASSWORD")
 		)
 	}
-	snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+	snapshotRepository(url: SNAPSHOT_REPOSITORY_URL) {
 		authentication(
-			userName: getProperty("maven.username"),
-			password: getProperty("maven.password")
+			userName: getProperty("WHISTLE_MAVEN_USERNAME"),
+			password: getProperty("WHISTLE_MAVEN_PASSWORD")
 		)
 	}
 	pom.project {
@@ -184,7 +269,7 @@ uploadArchives { repositories { mavenDeployer {
 		}
 	}
 }}}
-
+*/
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.0'
